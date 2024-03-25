@@ -1,69 +1,150 @@
-triggers:
-- intent: greeting
-  patterns:
-  - "Hello"
-  - "Hi"
-  - "Hey"
-- intent: goodbye
-  patterns:
-  - "Goodbye"
-  - "Bye"
-  - "See you later"
-- intent: inquiry_balance
-  patterns:
-  - "Check my balance"
-  - "What's my balance?"
-  - "Balance inquiry"
-- intent: transfer_money
-  patterns:
-  - "Transfer money"
-  - "Send funds"
-  - "Make a transfer"
-- intent: bill_payment
-  patterns:
-  - "Pay my bills"
-  - "Make a payment"
-  - "Pay a bill"
-actions:
-- intent: greeting
-  type: beginDialog
-  dialog: greetingDialog
-- intent: goodbye
-  type: beginDialog
-  dialog: goodbyeDialog
-- intent: inquiry_balance
-  type: beginDialog
-  dialog: balanceInquiryDialog
-- intent: transfer_money
-  type: beginDialog
-  dialog: transferMoneyDialog
-- intent: bill_payment
-  type: beginDialog
-  dialog: billPaymentDialog
-dialogs:
-- id: greetingDialog
-  waterfall:
-  - type: sendActivity
-    activity: "Hello! Welcome to our banking service. How can I assist you today?"
-- id: goodbyeDialog
-  waterfall:
-  - type: sendActivity
-    activity: "Goodbye! Thank you for using our banking service. Have a great day!"
-- id: balanceInquiryDialog
-  waterfall:
-  - type: sendActivity
-    activity: "Sure, let me check your balance."
-  - type: sendActivity
-    activity: "Your current balance is $1000. How can I assist you further?"
-- id: transferMoneyDialog
-  waterfall:
-  - type: sendActivity
-    activity: "Sure, let's proceed with the money transfer."
-  - type: sendActivity
-    activity: "Please provide the recipient's account details and the amount you wish to transfer."
-- id: billPaymentDialog
-  waterfall:
-  - type: sendActivity
-    activity: "Certainly, let's process your bill payment."
-  - type: sendActivity
-    activity: "Please provide the biller's information and the amount you'd like to pay."
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnBeginDialog
+  actions:
+  - SetProperty:
+      Property: conversation.topic
+      Value: invest
+steps:
+- id: investOptions
+  steps:
+  - intent: greeting
+    recognizeType: regex
+    patterns:
+    - "Hello"
+    - "Hi there"
+    - "Hey"
+    actions:
+    - SetProperty:
+        Property: user.name
+        Value: null
+    - SetProperty:
+        Property: user.investAmount
+        Value: 0
+    - SetProperty:
+        Property: user.investType
+        Value: null
+    - SetProperty:
+        Property: user.riskAppetite
+        Value: null
+    - SetProperty:
+        Property: user.investOption
+        Value: null
+    - SetProperty:
+        Property: user.continueInvest
+        Value: null
+    - SetProperty:
+        Property: user.askedRisk
+        Value: false
+    - SetProperty:
+        Property: user.askedAmount
+        Value: false
+    - SetProperty:
+        Property: user.askedType
+        Value: false
+    - SetProperty:
+        Property: user.askedOption
+        Value: false
+    - BeginDialog:
+        Dialog: askName
+- id: askName
+  steps:
+  - userInput:
+      alwaysPrompt: true
+      property: user.name
+      prompt: "What's your name?"
+      validations:
+      - type: string
+  - SetProperty:
+      Property: user.askedRisk
+      Value: true
+  - BeginDialog:
+      Dialog: askRiskAppetite
+- id: askRiskAppetite
+  steps:
+  - if:
+      condition: "user.askedRisk == false"
+      actions:
+      - SetProperty:
+          Property: user.riskAppetite
+          Value: null
+      - BeginDialog:
+          Dialog: askRiskAppetite
+      elseActions:
+      - TextInput:
+          Prompt: "How much risk are you comfortable with? (Low, Medium, High)"
+          Property: user.riskAppetite
+          MaxTurnCount: 2
+- id: recommendInvestment
+  steps:
+  - if:
+      condition: "user.riskAppetite != null && user.askedAmount == false"
+      actions:
+      - SetProperty:
+          Property: user.askedAmount
+          Value: true
+      - TextInput:
+          Prompt: "How much do you want to invest?"
+          Property: user.investAmount
+          Validations:
+          - Type: number
+            MinValue: 100
+            MaxValue: 1000000
+          MaxTurnCount: 2
+      elseActions:
+      - SetProperty:
+          Property: user.continueInvest
+          Value: false
+      - BeginDialog:
+          Dialog: askContinueInvest
+- id: askContinueInvest
+  steps:
+  - if:
+      condition: "user.continueInvest == false"
+      actions:
+      - SetProperty:
+          Property: user.investOption
+          Value: "None"
+      - SendActivity:
+          Activity: "Thank you for considering investing with us. Have a great day!"
+  - elseActions:
+    - SetProperty:
+        Property: user.askedType
+        Value: true
+    - ChoiceInput:
+        Prompt: "What type of investment are you interested in?"
+        Property: user.investType
+        Choices:
+        - Value: "Stocks"
+          Synonyms:
+          - "Stock Market"
+          - "Equities"
+        - Value: "Bonds"
+          Synonyms:
+          - "Fixed Income"
+        - Value: "Mutual Funds"
+          Synonyms:
+          - "Managed Funds"
+          - "Funds"
+- id: finalizeInvestment
+  steps:
+  - if:
+      condition: "user.askedType == true && user.askedOption == false"
+      actions:
+      - SetProperty:
+          Property: user.askedOption
+          Value: true
+      - ChoiceInput:
+          Prompt: "Do you want us to recommend specific options within your chosen investment type?"
+          Property: user.investOption
+          Choices:
+          - Value: "Yes"
+            Synonyms:
+            - "Sure"
+            - "Of course"
+          - Value: "No"
+            Synonyms:
+            - "No, thanks"
+  - elseActions:
+    - SendActivity:
+        Activity: "Great! We will provide you with the best investment options shortly. Thank you for choosing us!"
