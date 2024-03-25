@@ -1,0 +1,69 @@
+triggers:
+- intent: greeting
+  patterns:
+  - "Hello"
+  - "Hi"
+  - "Hey"
+- intent: goodbye
+  patterns:
+  - "Goodbye"
+  - "Bye"
+  - "See you later"
+- intent: inquiry_balance
+  patterns:
+  - "Check my balance"
+  - "What's my balance?"
+  - "Balance inquiry"
+- intent: transfer_money
+  patterns:
+  - "Transfer money"
+  - "Send funds"
+  - "Make a transfer"
+- intent: bill_payment
+  patterns:
+  - "Pay my bills"
+  - "Make a payment"
+  - "Pay a bill"
+actions:
+- intent: greeting
+  type: beginDialog
+  dialog: greetingDialog
+- intent: goodbye
+  type: beginDialog
+  dialog: goodbyeDialog
+- intent: inquiry_balance
+  type: beginDialog
+  dialog: balanceInquiryDialog
+- intent: transfer_money
+  type: beginDialog
+  dialog: transferMoneyDialog
+- intent: bill_payment
+  type: beginDialog
+  dialog: billPaymentDialog
+dialogs:
+- id: greetingDialog
+  waterfall:
+  - type: sendActivity
+    activity: "Hello! Welcome to our banking service. How can I assist you today?"
+- id: goodbyeDialog
+  waterfall:
+  - type: sendActivity
+    activity: "Goodbye! Thank you for using our banking service. Have a great day!"
+- id: balanceInquiryDialog
+  waterfall:
+  - type: sendActivity
+    activity: "Sure, let me check your balance."
+  - type: sendActivity
+    activity: "Your current balance is $1000. How can I assist you further?"
+- id: transferMoneyDialog
+  waterfall:
+  - type: sendActivity
+    activity: "Sure, let's proceed with the money transfer."
+  - type: sendActivity
+    activity: "Please provide the recipient's account details and the amount you wish to transfer."
+- id: billPaymentDialog
+  waterfall:
+  - type: sendActivity
+    activity: "Certainly, let's process your bill payment."
+  - type: sendActivity
+    activity: "Please provide the biller's information and the amount you'd like to pay."
