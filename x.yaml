@@ -1,151 +1,147 @@
-$kind: Microsoft.AdaptiveDialog
-$designer: 
-  name: AdaptiveDialog
-  id: AdaptiveDialog2Q31iB4q52
+kind: AdaptiveDialog
 autoEndDialog: true
 triggers:
-- $kind: Microsoft.OnBeginDialog
+- type: OnBeginDialog
   actions:
-  - $kind: Microsoft.SetProperty
-    property: conversation.topic
-    value: invest
+  - SetProperty:
+      property: conversation.topic
+      value: invest
 steps:
-- $id: '1'
-  steps:
-  - $kind: Microsoft.RegexRecognizer
-    intent: greeting
-    pattern: "(Hello|Hi there|Hey)"
-    actions:
-    - $kind: Microsoft.SetProperty
+- intent: greeting
+  recognizeType: regex
+  patterns:
+  - "(Hello|Hi there|Hey)"
+  actions:
+  - SetProperty:
       property: user.name
       value: null
-    - $kind: Microsoft.SetProperty
+  - SetProperty:
       property: user.investAmount
       value: 0
-    - $kind: Microsoft.SetProperty
+  - SetProperty:
       property: user.investType
       value: null
-    - $kind: Microsoft.SetProperty
+  - SetProperty:
       property: user.riskAppetite
       value: null
-    - $kind: Microsoft.SetProperty
+  - SetProperty:
       property: user.investOption
       value: null
-    - $kind: Microsoft.SetProperty
+  - SetProperty:
       property: user.continueInvest
       value: null
-    - $kind: Microsoft.SetProperty
+  - SetProperty:
       property: user.askedRisk
       value: false
-    - $kind: Microsoft.SetProperty
+  - SetProperty:
       property: user.askedAmount
       value: false
-    - $kind: Microsoft.SetProperty
+  - SetProperty:
       property: user.askedType
       value: false
-    - $kind: Microsoft.SetProperty
+  - SetProperty:
       property: user.askedOption
       value: false
-    - $kind: Microsoft.BeginDialog
+  - BeginDialog:
       dialog: askName
 - $id: askName
   steps:
-  - $kind: Microsoft.TextInput
-    alwaysPrompt: true
-    property: user.name
-    prompt: "What's your name?"
-    validations:
-    - $kind: Microsoft.StringExpression
-  - $kind: Microsoft.SetProperty
-    property: user.askedRisk
-    value: true
-  - $kind: Microsoft.BeginDialog
-    dialog: askRiskAppetite
+  - userInput:
+      alwaysPrompt: true
+      property: user.name
+      prompt: "What's your name?"
+      validations:
+      - type: string
+  - SetProperty:
+      property: user.askedRisk
+      value: true
+  - BeginDialog:
+      dialog: askRiskAppetite
 - $id: askRiskAppetite
   steps:
-  - $kind: Microsoft.IfCondition
-    condition: "user.askedRisk == false"
-    actions:
-    - $kind: Microsoft.SetProperty
-      property: user.riskAppetite
-      value: null
-    - $kind: Microsoft.BeginDialog
-      dialog: askRiskAppetite
-    elseActions:
-    - $kind: Microsoft.TextInput
-      prompt: "How much risk are you comfortable with? (Low, Medium, High)"
-      property: user.riskAppetite
-      maxTurnCount: 2
+  - if:
+      condition: "user.askedRisk == false"
+      actions:
+      - SetProperty:
+          property: user.riskAppetite
+          value: null
+      - BeginDialog:
+          dialog: askRiskAppetite
+      elseActions:
+      - TextInput:
+          prompt: "How much risk are you comfortable with? (Low, Medium, High)"
+          property: user.riskAppetite
+          maxTurnCount: 2
 - $id: recommendInvestment
   steps:
-  - $kind: Microsoft.IfCondition
-    condition: "user.riskAppetite != null && user.askedAmount == false"
-    actions:
-    - $kind: Microsoft.SetProperty
-      property: user.askedAmount
-      value: true
-    - $kind: Microsoft.TextInput
-      prompt: "How much do you want to invest?"
-      property: user.investAmount
-      validations:
-      - $kind: Microsoft.NumberExpression
-        minValue: 100
-        maxValue: 1000000
-      maxTurnCount: 2
-    elseActions:
-    - $kind: Microsoft.SetProperty
-      property: user.continueInvest
-      value: false
-    - $kind: Microsoft.BeginDialog
-      dialog: askContinueInvest
+  - if:
+      condition: "user.riskAppetite != null && user.askedAmount == false"
+      actions:
+      - SetProperty:
+          property: user.askedAmount
+          value: true
+      - TextInput:
+          prompt: "How much do you want to invest?"
+          property: user.investAmount
+          validations:
+          - type: number
+            minValue: 100
+            maxValue: 1000000
+          maxTurnCount: 2
+      elseActions:
+      - SetProperty:
+          property: user.continueInvest
+          value: false
+      - BeginDialog:
+          dialog: askContinueInvest
 - $id: askContinueInvest
   steps:
-  - $kind: Microsoft.IfCondition
-    condition: "user.continueInvest == false"
-    actions:
-    - $kind: Microsoft.SetProperty
-      property: user.investOption
-      value: "None"
-    - $kind: Microsoft.SendActivity
-      activity: "Thank you for considering investing with us. Have a great day!"
+  - if:
+      condition: "user.continueInvest == false"
+      actions:
+      - SetProperty:
+          property: user.investOption
+          value: "None"
+      - SendActivity:
+          activity: "Thank you for considering investing with us. Have a great day!"
   - elseActions:
-    - $kind: Microsoft.SetProperty
-      property: user.askedType
-      value: true
-    - $kind: Microsoft.ChoiceInput
-      prompt: "What type of investment are you interested in?"
-      property: user.investType
-      choices:
-      - value: "Stocks"
-        synonyms:
-        - "Stock Market"
-        - "Equities"
-      - value: "Bonds"
-        synonyms:
-        - "Fixed Income"
-      - value: "Mutual Funds"
-        synonyms:
-        - "Managed Funds"
-        - "Funds"
+    - SetProperty:
+        property: user.askedType
+        value: true
+    - ChoiceInput:
+        prompt: "What type of investment are you interested in?"
+        property: user.investType
+        choices:
+        - value: "Stocks"
+          synonyms:
+          - "Stock Market"
+          - "Equities"
+        - value: "Bonds"
+          synonyms:
+          - "Fixed Income"
+        - value: "Mutual Funds"
+          synonyms:
+          - "Managed Funds"
+          - "Funds"
 - $id: finalizeInvestment
   steps:
-  - $kind: Microsoft.IfCondition
-    condition: "user.askedType == true && user.askedOption == false"
-    actions:
-    - $kind: Microsoft.SetProperty
-      property: user.askedOption
-      value: true
-    - $kind: Microsoft.ChoiceInput
-      prompt: "Do you want us to recommend specific options within your chosen investment type?"
-      property: user.investOption
-      choices:
-      - value: "Yes"
-        synonyms:
-        - "Sure"
-        - "Of course"
-      - value: "No"
-        synonyms:
-        - "No, thanks"
+  - if:
+      condition: "user.askedType == true && user.askedOption == false"
+      actions:
+      - SetProperty:
+          property: user.askedOption
+          value: true
+      - ChoiceInput:
+          prompt: "Do you want us to recommend specific options within your chosen investment type?"
+          property: user.investOption
+          choices:
+          - value: "Yes"
+            synonyms:
+            - "Sure"
+            - "Of course"
+          - value: "No"
+            synonyms:
+            - "No, thanks"
   - elseActions:
-    - $kind: Microsoft.SendActivity
-      activity: "Great! We will provide you with the best investment options shortly. Thank you for choosing us!"
+    - SendActivity:
+        activity: "Great! We will provide you with the best investment options shortly. Thank you for choosing us!"
