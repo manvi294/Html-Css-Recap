@@ -1,12 +1,13 @@
 kind: AdaptiveDialog
-beginDialog:
-  kind: OnBeginDialog
+autoEndDialog: true
+triggers:
+- type: OnBeginDialog
   actions:
   - SetProperty:
-      Property: conversation.topic
-      Value: invest
+      property: conversation.topic
+      value: invest
 steps:
-- id: investOptions
+- id: '1'
   steps:
   - intent: greeting
     recognizeType: regex
@@ -16,37 +17,37 @@ steps:
     - "Hey"
     actions:
     - SetProperty:
-        Property: user.name
-        Value: null
+        property: user.name
+        value: null
     - SetProperty:
-        Property: user.investAmount
-        Value: 0
+        property: user.investAmount
+        value: 0
     - SetProperty:
-        Property: user.investType
-        Value: null
+        property: user.investType
+        value: null
     - SetProperty:
-        Property: user.riskAppetite
-        Value: null
+        property: user.riskAppetite
+        value: null
     - SetProperty:
-        Property: user.investOption
-        Value: null
+        property: user.investOption
+        value: null
     - SetProperty:
-        Property: user.continueInvest
-        Value: null
+        property: user.continueInvest
+        value: null
     - SetProperty:
-        Property: user.askedRisk
-        Value: false
+        property: user.askedRisk
+        value: false
     - SetProperty:
-        Property: user.askedAmount
-        Value: false
+        property: user.askedAmount
+        value: false
     - SetProperty:
-        Property: user.askedType
-        Value: false
+        property: user.askedType
+        value: false
     - SetProperty:
-        Property: user.askedOption
-        Value: false
+        property: user.askedOption
+        value: false
     - BeginDialog:
-        Dialog: askName
+        dialog: askName
 - id: askName
   steps:
   - userInput:
@@ -56,74 +57,74 @@ steps:
       validations:
       - type: string
   - SetProperty:
-      Property: user.askedRisk
-      Value: true
+      property: user.askedRisk
+      value: true
   - BeginDialog:
-      Dialog: askRiskAppetite
+      dialog: askRiskAppetite
 - id: askRiskAppetite
   steps:
   - if:
       condition: "user.askedRisk == false"
       actions:
       - SetProperty:
-          Property: user.riskAppetite
-          Value: null
+          property: user.riskAppetite
+          value: null
       - BeginDialog:
-          Dialog: askRiskAppetite
+          dialog: askRiskAppetite
       elseActions:
       - TextInput:
-          Prompt: "How much risk are you comfortable with? (Low, Medium, High)"
-          Property: user.riskAppetite
-          MaxTurnCount: 2
+          prompt: "How much risk are you comfortable with? (Low, Medium, High)"
+          property: user.riskAppetite
+          maxTurnCount: 2
 - id: recommendInvestment
   steps:
   - if:
       condition: "user.riskAppetite != null && user.askedAmount == false"
       actions:
       - SetProperty:
-          Property: user.askedAmount
-          Value: true
+          property: user.askedAmount
+          value: true
       - TextInput:
-          Prompt: "How much do you want to invest?"
-          Property: user.investAmount
-          Validations:
-          - Type: number
-            MinValue: 100
-            MaxValue: 1000000
-          MaxTurnCount: 2
+          prompt: "How much do you want to invest?"
+          property: user.investAmount
+          validations:
+          - type: number
+            minValue: 100
+            maxValue: 1000000
+          maxTurnCount: 2
       elseActions:
       - SetProperty:
-          Property: user.continueInvest
-          Value: false
+          property: user.continueInvest
+          value: false
       - BeginDialog:
-          Dialog: askContinueInvest
+          dialog: askContinueInvest
 - id: askContinueInvest
   steps:
   - if:
       condition: "user.continueInvest == false"
       actions:
       - SetProperty:
-          Property: user.investOption
-          Value: "None"
+          property: user.investOption
+          value: "None"
       - SendActivity:
-          Activity: "Thank you for considering investing with us. Have a great day!"
+          activity: "Thank you for considering investing with us. Have a great day!"
   - elseActions:
     - SetProperty:
-        Property: user.askedType
-        Value: true
+        property: user.askedType
+        value: true
     - ChoiceInput:
-        Prompt: "What type of investment are you interested in?"
-        Property: user.investType
-        Choices:
-        - Value: "Stocks"
-          Synonyms:
+        prompt: "What type of investment are you interested in?"
+        property: user.investType
+        choices:
+        - value: "Stocks"
+          synonyms:
           - "Stock Market"
           - "Equities"
-        - Value: "Bonds"
-          Synonyms:
+        - value: "Bonds"
+          synonyms:
           - "Fixed Income"
-        - Value: "Mutual Funds"
-          Synonyms:
+        - value: "Mutual Funds"
+          synonyms:
           - "Managed Funds"
           - "Funds"
 - id: finalizeInvestment
@@ -132,19 +133,19 @@ steps:
       condition: "user.askedType == true && user.askedOption == false"
       actions:
       - SetProperty:
-          Property: user.askedOption
-          Value: true
+          property: user.askedOption
+          value: true
       - ChoiceInput:
-          Prompt: "Do you want us to recommend specific options within your chosen investment type?"
-          Property: user.investOption
-          Choices:
-          - Value: "Yes"
-            Synonyms:
+          prompt: "Do you want us to recommend specific options within your chosen investment type?"
+          property: user.investOption
+          choices:
+          - value: "Yes"
+            synonyms:
             - "Sure"
             - "Of course"
-          - Value: "No"
-            Synonyms:
+          - value: "No"
+            synonyms:
             - "No, thanks"
   - elseActions:
     - SendActivity:
-        Activity: "Great! We will provide you with the best investment options shortly. Thank you for choosing us!"
+        activity: "Great! We will provide you with the best investment options shortly. Thank you for choosing us!"
