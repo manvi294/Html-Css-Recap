@@ -1,57 +1,26 @@
-version: 1.0
-triggers:
-- intent: greeting
-  pattern: "(Hello|Hi|Hey)"
-steps:
-- intent: greeting
-  actions:
-  - SetProperty:
-      property: user.name
-      value: null
-  - BeginDialog:
-      dialog: askName
+from shareplum import Site
+from shareplum import Office365
 
-- id: askName
-  steps:
-  - TextInput:
-      property: user.name
-      prompt: "What's your name?"
-      validations:
-      - type: string
-  - BeginDialog:
-      dialog: askRiskAppetite
+# SharePoint site URL
+site_url = "https://your-sharepoint-site.sharepoint.com/sites/YourSite"
 
-- id: askRiskAppetite
-  steps:
-  - TextInput:
-      property: user.riskAppetite
-      prompt: "How much risk are you comfortable with? (Low, Medium, High)"
-      validations:
-      - type: string
-  - TextInput:
-      property: user.investAmount
-      prompt: "How much do you want to invest?"
-      validations:
-      - type: number
-        minValue: 100
-        maxValue: 1000000
-  - ChoiceInput:
-      property: user.investType
-      prompt: "What type of investment are you interested in?"
-      choices:
-      - value: "Stocks"
-        synonyms: ["Stock Market", "Equities"]
-      - value: "Bonds"
-        synonyms: ["Fixed Income"]
-      - value: "Mutual Funds"
-        synonyms: ["Managed Funds", "Funds"]
-  - ChoiceInput:
-      property: user.investOption
-      prompt: "Do you want specific investment recommendations?"
-      choices:
-      - value: "Yes"
-        synonyms: ["Sure", "Of course"]
-      - value: "No"
-        synonyms: ["No, thanks"]
-  - SendActivity:
-      activity: "Thank you for considering investing with us. Have a great day!"
+# Credentials
+username = "your_username@yourcompany.com"
+password = "your_password"
+domain = "yourcompany.com"
+
+# Initialize Office365 session
+authcookie = Office365(site_url, username=username, password=password).GetCookies()
+
+# Connect to SharePoint site
+site = Site(site_url, authcookie=authcookie)
+
+# Specify the SharePoint list name
+list_name = "YourListName"
+
+# Get the SharePoint list data
+data = site.List(list_name)
+
+# Print the data
+for item in data:
+    print(item)
