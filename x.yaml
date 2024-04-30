@@ -1,3 +1,15 @@
+[4/30, 9:59 AM] manvi: https://learn.microsoft.com/en-us/graph/api/resources/sharepoint?view=graph-rest-1.0
+[4/30, 9:59 AM] manvi: 1. Get credentials to generate access token for ms graph api https://learn.microsoft.com/en-us/graph/auth-register-app-v2
+2. ⁠Add *Sites.ReadAll* scope in the api permissions https://learn.microsoft.com/en-us/graph/api/site-list?view=graph-rest-1.0&tabs=http
+3. ⁠Extract all the sites and ask manager what all data is needed example json - https://learn.microsoft.com/en-us/graph/api/site-list?view=graph-rest-1.0&tabs=http#example-2-list-all-sites
+[4/30, 10:05 AM] manvi: 1. Microsoft graph API (best,)
+2. Rest api
+3. Csom
+
+
+
+
+
 from shareplum import Site
 from shareplum import Office365
 
