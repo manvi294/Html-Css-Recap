@@ -35,3 +35,19 @@ merged_data = merge_csv_files(folder_path)
 
 # Save the merged data to a new CSV file
 merged_data.to_csv(os.path.join(folder_path, 'merged_output.csv'), index=False)
+
+
+
+
+...
+
+
+# Path to the folder containing the CSV files
+folder_path = r'C:\path\to\your\folder'  # Replace with the actual path to your folder
+
+# Merge the CSV files
+merged_data = merge_csv_files(folder_path)
+
+# Save the merged data to a new CSV file
+output_file = os.path.join(folder_path, 'merged_output.csv')
+merged_data.to_csv(output_file, index=False)
