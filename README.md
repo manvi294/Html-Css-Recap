@@ -1,53 +1,31 @@
 import pandas as pd
-import os
-import glob
 
-def merge_csv_files(folder_path, key='ticket ID'):
-    # Get a list of all CSV files in the specified folder
-    file_list = glob.glob(os.path.join(folder_path, '*.csv'))
-    
-    # Initialize an empty dataframe for the merged result
-    merged_df = pd.DataFrame()
-    
-    for file in file_list:
-        # Read the CSV file into a dataframe
-        df = pd.read_csv(file)
-        
-        # Extract the file name without extension
-        file_name = os.path.splitext(os.path.basename(file))[0]
-        
-        # Rename columns with the format <original field name>_<file name>
-        df.rename(columns=lambda x: f"{x}_{file_name}" if x != key else x, inplace=True)
-        
-        # Merge dataframes on the key
-        if merged_df.empty:
-            merged_df = df
-        else:
-            merged_df = pd.merge(merged_df, df, on=key, how='outer')
-    
-    return merged_df
+# Load the Excel file
+file_path = 'path/to/your/excel_file.xlsx'
+df = pd.read_excel(file_path)
 
-# Path to the folder containing the CSV files
-folder_path = r'C:\path\to\your\folder'  # Replace with the actual path to your folder
+# Define the mapping rules (in lowercase for case insensitivity)
+status_mapping = {
+    'new': 'Pre-Execution',
+    'requested': 'Pre-Execution',
+    'in progress': 'Execution',
+    'waiting': 'Execution',
+    'on hold': 'Execution'
+}
 
-# Merge the CSV files
-merged_data = merge_csv_files(folder_path)
+# Function to apply the mapping
+def map_status(status):
+    if isinstance(status, str):
+        return status_mapping.get(status.lower(), status)
+    return status
 
-# Save the merged data to a new CSV file
-merged_data.to_csv(os.path.join(folder_path, 'merged_output.csv'), index=False)
+# Apply the mapping to all columns that start with 'status' (case insensitive)
+for col in df.columns:
+    if col.lower().startswith('status'):
+        df[col] = df[col].apply(map_status)
 
+# Save the modified DataFrame back to an Excel file
+output_file_path = 'path/to/your/output_excel_file.xlsx'
+df.to_excel(output_file_path, index=False)
 
-
-
-...
-
-
-# Path to the folder containing the CSV files
-folder_path = r'C:\path\to\your\folder'  # Replace with the actual path to your folder
-
-# Merge the CSV files
-merged_data = merge_csv_files(folder_path)
-
-# Save the merged data to a new CSV file
-output_file = os.path.join(folder_path, 'merged_output.csv')
-merged_data.to_csv(output_file, index=False)
+print(f"Data successfully modified and saved to {output_file_path}")
