@@ -1,3 +1,5 @@
+#
+
 import requests
 
 tenant_id = 'YOUR_TENANT_ID'
@@ -15,3 +17,17 @@ token_data = {
 
 token_r = requests.post(token_url, data=token_data)
 token = token_r.json().get('access_token')
+
+
+.
+
+
+graph_api_url = 'https://graph.microsoft.com/v1.0/sites/root'
+headers = {
+    'Authorization': f'Bearer {token}'
+}
+
+response = requests.get(graph_api_url, headers=headers)
+sites = response.json()
+
+print(sites)
