@@ -102,7 +102,7 @@ def label_entities(text):
         elif any(entity_lower in keywords[key] for key in ["CTR", "MIR", "SAR"]):
             labeled_entities["addon"] = entity_lower
         elif label == "GPE" or label == "region":
-            labeled_entities["region"] = entity_lower
+            labeled_entities["region"] = entity
         elif label == "DATE" or label == "time":
             labeled_entities["time"] = entity_lower
 
