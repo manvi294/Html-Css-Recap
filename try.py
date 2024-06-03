@@ -1,53 +1,58 @@
-import numpy as np
-import pandas as pd
-import nltk
-from nltk.tokenize import word_tokenize
-from sklearn.model_selection import train_test_split
-import torch
-import torch.nn as nn
-import torch.optim as optim
-from torchcrf import CRF
-from torch.utils.data import DataLoader, Dataset
+# To keep track of whether the drill question has been asked
+drill_asked = False
 
-# Download necessary NLTK data
-nltk.download('punkt')
+def handle_redirection(scenario_tag, follow_up):
+    global drill_asked
 
-# Load GloVe embeddings
-def load_glove_embeddings(glove_path):
-    embeddings_index = {}
-    with open(glove_path, 'r', encoding='utf-8') as f:
-        for line in f:
-            values = line.split()
-            word = values[0]
-            coefs = np.asarray(values[1:], dtype='float32')
-            embeddings_index[word] = coefs
-    return embeddings_index
+    # Check for the next follow-up question
+    next_follow_up = follow_up + 1
+    
+    # Find the next follow-up in the tags
+    next_entry = next((entry for entry in tags if entry['Scenario Tag'] == scenario_tag and entry['Follow Up'] == next_follow_up), None)
+    
+    if next_entry:
+        # Return the next follow-up question
+        return next_entry['Question Tag']
+    else:
+        if not drill_asked:
+            # If no next follow-up exists, return the drill question
+            drill_entry = next((entry for entry in tags if entry['Scenario Tag'] == 'drill' and entry['Follow Up'] == 100), None)
+            drill_asked = True  # Set flag to indicate drill question has been asked
+            
+            if drill_entry:
+                return drill_entry['Question Tag']
+            else:
+                return "Thanks for your input!"
+        else:
+            return "Thanks for your input!"
 
-glove_path = 'glove.6B.100d.txt'  # Adjust path as necessary
-embeddings_index = load_glove_embeddings(glove_path)
+# Main function for manual input and entity extraction
+def main():
+    global drill_asked
 
-# Tokenize and encode the dataset
-def tokenize_and_encode(texts, labels, embeddings_index, max_len=50):
-    X, y = [], []
-    for text, label in zip(texts, labels):
-        tokens = word_tokenize(text)
-        token_ids = [embeddings_index.get(token, np.zeros(100)) for token in tokens]
-        if len(token_ids) < max_len:
-            token_ids += [np.zeros(100)] * (max_len - len(token_ids))
-        X.append(token_ids[:max_len])
-        y.append(label.split()[:max_len])
-    return np.array(X), y
+    # Reset drill_asked flag for each new input
+    drill_asked = False
 
-# Example dataset (replace with your actual data)
-data = pd.DataFrame({
-    'text': ["number of poor performing ATM in Arizona", "how are my ATM doing today"],
-    'labels': ["O O O O B-ATM O B-REGION", "O O O O B-ATM O B-TIME"]
-})
+    # Example input
+    text = input("Enter your query: ")
 
-# Encode data
-X, y = tokenize_and_encode(data['text'].values, data['labels'].values, embeddings_index)
-label_map = {"O": 0, "B-ATM": 1, "I-ATM": 2, "B-REGION": 3, "I-REGION": 4, "B-TIME": 5, "I-TIME": 6}
-y = [[label_map.get(lbl, 0) for lbl in seq] for seq in y]
+    # Label the entities
+    labeled_entities = label_entities(text)
 
-# Split data
-X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2)
+    # Print the labeled entities
+    for label, value in labeled_entities.items():
+        print(f"({label}: {value})")
+
+    # Determine initial scenario tag and follow-up
+    scenario_tag, follow_up = map_entities_to_tag(labeled_entities)
+    
+    if scenario_tag is None or follow_up is None:
+        print("Could not determine scenario tag or follow-up.")
+        return
+
+    # Handle redirection based on the scenario tag and follow-up
+    response = handle_redirection(scenario_tag, follow_up)
+    print(response)
+
+if __name__ == "__main__":
+    main()
